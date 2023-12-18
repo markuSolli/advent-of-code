@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #include "utils.h"
 
-int parseCubes(char* file, int* index);
-int parseSet(char* file, int* index);
+void parseCubes(char* file, int* counts, int* index);
+void parseSet(char* file, int* counts, int* index);
 int totalGameIds(char* file);
 
-int parseCubes(char* file, int* index) {
+void parseCubes(char* file, int* counts, int* index) {
     int amount = 0;
 
     while (isdigit(file[*index])) {
@@ -22,60 +23,45 @@ int parseCubes(char* file, int* index) {
         case 'r':
             *index += 3;
 
-            if (amount > 12) {
-                return 1;
+            if (amount > counts[0]) {
+                counts[0] = amount;
             }
             break;
         case 'g':
             *index += 5;
 
-            if (amount > 13) {
-                return 1;
+            if (amount > counts[1]) {
+                counts[1] = amount;
             }
             break;
         case 'b':
             *index += 4;
 
-            if (amount > 14) {
-                return 1;
+            if (amount > counts[2]) {
+                counts[2] = amount;
             }
             break;
     }
-
-    return 0;
 }
 
-int parseSet(char* file, int* index) {
-    int result;
-
+void parseSet(char* file, int* counts, int* index) {
     while ((file[*index] != ';') && (file[*index] != '\n')) {
-        result = parseCubes(file, index);
+        parseCubes(file, counts, index);
 
         if (file[*index] == ',') {
             *index += 2;
-        }
-
-        if (result == 1) {
-            while ((file[*index] != ';') && (file[*index] != '\n')) {
-                *index += 1;
-            }
-
-            return 1;
         }
     }
 
     if (file[*index] == ';') {
         *index += 2;
     }
-
-    return 0;
 }
 
 int totalGameIds(char* file) {
     int total = 0;
     int i = 0;
-    int id = 1;
-    int result;
+    int* counts = (int*) malloc(3 * sizeof(int));
 
     while (file[i] != '\0') {
         while (file[i] != ':') {
@@ -83,24 +69,17 @@ int totalGameIds(char* file) {
         }
         
         i+=2;
+        memset(counts, 0, 3 * sizeof(int));
 
         while (file[i] != '\n') {
-            result = parseSet(file, &i);
-
-            if (result == 1) {
-                while (file[i] != '\n') {
-                    i++;
-                }
-            }
+            parseSet(file, counts, &i);
         }
 
-        if (result == 0) {
-            total += id;
-        }
-
-        id++;
+        total += counts[0] * counts[1] * counts[2];
         i++;
     }
+
+    free(counts);
 
     return total;
 }
