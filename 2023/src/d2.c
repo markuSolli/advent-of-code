@@ -6,7 +6,7 @@
 
 void parseCubes(char* file, int* counts, int* index);
 void parseSet(char* file, int* counts, int* index);
-int totalGameIds(char* file);
+int totalSetPower(char* file);
 
 void parseCubes(char* file, int* counts, int* index) {
     int amount = 0;
@@ -58,7 +58,7 @@ void parseSet(char* file, int* counts, int* index) {
     }
 }
 
-int totalGameIds(char* file) {
+int totalSetPower(char* file) {
     int total = 0;
     int i = 0;
     int* counts = (int*) malloc(3 * sizeof(int));
@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 
     char* file = readFile(argv[1]);
     
-    int total = totalGameIds(file);
+    int total = totalSetPower(file);
 
     printf("%d\n", total);
 
