@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include "utils.h"
 
 struct keyword {
@@ -66,7 +65,7 @@ int totalCalibrationValues(char* file) {
         while (file[i] != '\n') {
             digit = -1;
 
-            if (isdigit(file[i])) {
+            if (isDigit(file[i])) {
                 digit = file[i] - '0';
             } else {
                 digit = scanKeywords(file, &i);

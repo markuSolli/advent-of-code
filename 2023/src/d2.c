@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <string.h>
 #include "utils.h"
 
@@ -11,7 +10,7 @@ int totalSetPower(char* file);
 void parseCubes(char* file, int* counts, int* index) {
     int amount = 0;
 
-    while (isdigit(file[*index])) {
+    while (isDigit(file[*index])) {
         amount *= 10;
         amount += file[*index] - '0';
         *index += 1;
