@@ -2,18 +2,10 @@
 #include <stdlib.h>
 #include "utils.h"
 
-int isDigit(char c);
 int isSymbol(char c);
-int isValid(char* file, int width, int height, int y, int first_x, int last_x);
-int totalPartNumbers(char* file);
-
-int isDigit(char c) {
-    if ((c >= '0') && (c <= '9')) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
+void getDimensions(char * file, int* width, int* height);
+void connectGears(char* file, int* ratios, int* connections, int number, int width, int height, int y, int first_x, int last_x);
+int totalGearRatios(char* file);
 
 int isSymbol(char c) {
     if (!isDigit(c) && (c != '.')) {
@@ -23,62 +15,96 @@ int isSymbol(char c) {
     }
 }
 
-int isValid(char* file, int width, int height, int y, int first_x, int last_x) {
+void getDimensions(char * file, int* width, int* height) {
+    int i = 0;
+    *height = 0;
+
+    while (file[i] != '\n') {
+        i++;
+    }
+
+    *width = i;
+
+    while (file[i] != '\0') {
+        if (file[i] == '\n') {
+            *height = *height + 1;
+        }
+        i++;
+    }
+}
+
+void connectGears(char* file, int* ratios, int* connections, int number, int width, int height, int y, int first_x, int last_x) {
     int x1 = first_x;
     int x2 = last_x;
+    int index;
 
     if ((first_x - 1) >= 0) {
         x1 = first_x - 1;
+        index = y * width + x1;
 
-        if (isSymbol(file[y * (width + 1) + x1])) {
-            return 1;
+        if (file[y * (width + 1) + x1] == '*') {
+            connections[index]++;
+
+            if (connections[index] <= 2) {
+                ratios[index] *= number;
+            }
         }
     }
 
     if ((last_x + 1) < width) {
         x2 = last_x + 1;
+        index = y * width + x2;
 
-        if (isSymbol(file[y * (width + 1) + x2])) {
-            return 1;
+        if (file[y * (width + 1) + x2] == '*') {
+            connections[index]++;
+
+            if (connections[index] <= 2) {
+                ratios[index] *= number;
+            }
         }
     }
 
     if ((y + 1) < height) {
         for (int x=x1; x <= x2; x++) {
-            if (isSymbol(file[(y + 1) * (width + 1) + x])) {
-                return 1;
+            index = (y + 1) * width + x;
+
+            if (file[(y + 1) * (width + 1) + x] == '*') {
+                connections[index]++;
+
+                if (connections[index] <= 2) {
+                    ratios[index] *= number;
+                }
             }
         }
     }
 
     if ((y - 1) >= 0) {
         for (int x=x1; x <= x2; x++) {
-            if (isSymbol(file[(y - 1) * (width + 1) + x])) {
-                return 1;
+            index = (y - 1) * width + x;
+
+            if (file[(y - 1) * (width + 1) + x] == '*') {
+                connections[index]++;
+
+                if (connections[index] <= 2) {
+                    ratios[index] *= number;
+                }
             }
         }
     }
-
-    return 0;
 }
 
-int totalPartNumbers(char* file) {
-    int width;
-    int height = 0;
-    int total = 0;
-    int i = 0;
+int totalGearRatios(char* file) {
+    int width, height;
+    getDimensions(file, &width, &height);
 
-    while (file[i] != '\n') {
-        i++;
-    }
+    int* ratios = (int*) malloc(width * height * sizeof(int));
+    int* connections = (int*) malloc(width * height * sizeof(int));
 
-    width = i;
-
-    while (file[i] != '\0') {
-        if (file[i] == '\n') {
-            height++;
+    for (int x=0; x<width; x++) {
+        for (int y=0; y<height; y++) {
+            ratios[y * width + x] = 1;
+            connections[y * width + x] = 0;
         }
-        i++;
     }
 
     for (int y=0; y<height; y++) {
@@ -95,13 +121,23 @@ int totalPartNumbers(char* file) {
                 }
                 x--;
 
-                if (isValid(file, width, height, y, first_x, x)) {
-                    total += number;
-                }
+                connectGears(file, ratios, connections, number, width, height, y, first_x, x);
             }
         }
     }
 
+    int total = 0;
+
+    for (int x=0; x<width; x++) {
+        for (int y=0; y<height; y++) {
+            if (connections[y * width + x] == 2) {
+                total += ratios[y * width + x];
+            }
+        }
+    }
+
+    free(ratios);
+    free(connections);
     return total;
 }
 
@@ -113,7 +149,7 @@ int main(int argc, char **argv) {
 
     char* file = readFile(argv[1]);
     
-    int total = totalPartNumbers(file);
+    int total = totalGearRatios(file);
 
     printf("%d\n", total);
 
